@@ -9,6 +9,3 @@ class Solution:
             return initial_res
         return [0]
 
-
-s = Solution()
-print(s.grayCode(2))

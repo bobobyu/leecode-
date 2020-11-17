@@ -10,7 +10,6 @@ d = [[0 for _ in range(N)] for __ in range(V + 1)]
 d[row][col] = max(d[row - W[col]]) + P[col]  
 状态转移方程，对于第row行表示此刻背包容积为row，放入第col个物体。
 等于减去这个物体的重量后的第row-w[col]行的最大值。
-
 '''
 for row in range(V + 1):
     for col in range(N):

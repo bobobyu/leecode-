@@ -15,5 +15,5 @@ class Link:
         self.end_node = pre_node
     def show(self, current):
         if current:
-            print(current.val, end=' ')
+            print(current.val,sep=' ', end=' ')
             self.show(current.next)

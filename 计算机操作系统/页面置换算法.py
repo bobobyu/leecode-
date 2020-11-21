@@ -1,6 +1,5 @@
 from typing import List
 
-
 class StorageBlock:
     def __init__(self, page_index: int = -1):
         self.page_index: int = page_index
@@ -33,7 +32,8 @@ class PhysicsBlockLink:
 
     def _output_index(self, access_hit: bool) -> list:
         head_block = self.head_block
-        if access_hit and (len(self.page_index_view) == self.link_size or len(self.least_recent_dict) == self.link_size):
+        if access_hit and (
+                len(self.page_index_view) == self.link_size or len(self.least_recent_dict) == self.link_size):
             return [-2] * self.link_size
         result: list = []
         for index in range(self.link_size):
@@ -145,6 +145,7 @@ class PhysicsBlockLink:
             self.least_recent_dict[args[0]] = 0
 
         return self._output_index(access_hit=access_hit)
+
     def reset_physics_link(self):
         head: StorageBlock = self.head_block
         self.empty_block = self.head_block
@@ -192,9 +193,9 @@ class PageReplacementMethod:
             3: self.physics_block_link.least_recently_used,
         }
         while True:
-            print(f'<<<{"-"*20}>>>')
+            print(f'<<<{"-" * 20}>>>')
             print('1:FIFO\t2:OPT\t3:LRU')
-            print(f'<<<{"-"*20}>>>')
+            print(f'<<<{"-" * 20}>>>')
             op = int(input('Input the page replace algorithm:'))
             print()
             self._show_outcome(self._call_in_page(op_dict[op]))

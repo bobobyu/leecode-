@@ -8,36 +8,83 @@ class Solution:
         def merge_sort(head_node: ListNode) -> ListNode:
             if not head_node.next:
                 return head_node
-            fast_point: ListNode = head
-            slow_point: ListNode = head
-            while fast_point:
-                fast_point = fast_point.next.next
+
+            fast_point: ListNode = head_node
+            slow_point: ListNode = head_node
+            while True:
+                fast_point = fast_point.next
+                if fast_point and fast_point.next:
+                    fast_point = fast_point.next
+                else:
+                    break
                 slow_point = slow_point.next
 
-            left_link: ListNode = merge_sort(head_node=head_node)
-            right_link: ListNode = merge_sort(head_node=slow_point)
+            # a.show(head_node)
+            vice_node = slow_point.next
+            slow_point.next = None
+            # vice_node.pre = None
 
-            right_empty: ListNode = ListNode()
-            left_empty: ListNode = ListNode()
-            right_empty.next = right_link
-            left_empty.next = left_link
-            pre_left: ListNode = left_empty
+            # a.show(head_node)
+            # a.show(vice_node)
+            # print(fast_point.val)
+            # print(vice_node.val)
+            # print(vice_node.val)
+            # print('----')
+            # sleep(0.5)
 
-            while right_empty.next:
-                if left_link.val <= right_link.val:
-                    if not left_link.next:
-                        left_link.next = right_link
-                        right_empty.next = None
-                        break
-                    else:
-                        left_link = left_link.next
-                        pre_left = left_link
+            main_head: ListNode = merge_sort(head_node=head_node)
+            vice_head: ListNode = merge_sort(head_node=vice_node)
+
+            # a.show(main_head)
+            # a.show(vice_node)
+            # print('--')
+            # print()
+
+            main_empty: ListNode = ListNode()
+            vice_empty: ListNode = ListNode()
+            main_empty.next = main_head
+            main_head.pre = main_empty
+            vice_empty.next = vice_head
+            vice_head.pre = vice_empty
+
+            while vice_empty.next:
+
+                if vice_head.val <= main_head.val:
+
+                    vice_empty.next = vice_head.next
+                    if vice_head.next:
+                        vice_head.next.pre = vice_empty
+                    vice_head.pre = None
+                    vice_head.next = None
+
+                    main_head.pre.next = vice_head
+                    vice_head.pre = main_head.pre
+
+                    vice_head.next = main_head
+                    main_head.pre = vice_head
+
+                    vice_head = vice_empty.next
+                elif vice_head.val > main_head.val and not main_head.next:
+
+                    vice_empty.next = vice_head.next
+                    if vice_head.next:
+                        vice_head.next.pre = vice_empty
+                    vice_head.pre = None
+                    vice_head.next = None
+
+                    vice_head.pre = main_head
+                    main_head.next = vice_head
+
+                    main_head = vice_head
+                    vice_head = vice_empty.next
                 else:
-                    right_empty.next = right_link.next
+                    main_head = main_head.next
+            # a.show(main_empty.next)
+            # print('<>')
+            return main_empty.next
+        return merge_sort(head_node=head)
 
-                    pre_left.next = right_link
-                    right_link.next = left_link
-
-                    pre_left = right_link
-                    right_link = right_empty.next
-            return left_empty.next
+a = Link([2,1,3,4,5,1234,2345,12,34,])
+S = Solution()
+x = S.sortList(a.head_node)
+a.show(x)

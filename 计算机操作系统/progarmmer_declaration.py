@@ -1,13 +1,13 @@
 'programmer:BoYu-Du by:2020/11/17 summary:This program is used to simulate continuous storage allocation management.'
 
-
+import time
 def writer_log(**kwargs):
     def inner(obj):
         return obj
     print(f'''
-    Programmer: {kwargs['writer']}
-    By:{kwargs['by']}
-    Summary:This program is used to simulate {kwargs['summary']}.
+    Programmer :\t{kwargs['writer']}
+    Running on :\t{time.asctime( time.localtime(time.time()) )}
+    Summary :\t\tThis program is used to simulate {kwargs['summary']}.
     ''')
     return inner
 

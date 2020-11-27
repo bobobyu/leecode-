@@ -12,7 +12,7 @@ def bubble_sort(list_: List[int]) -> None:
             if list_[i] > list_[m]:
                 list_[i], list_[m] = list_[m], list_[i]
 
-@writer_log(writer='BoYu-Du', by='2020-11-25', summary='disk scheduling policy')
+@writer_log(writer='BoYu-Du', summary='disk scheduling policy')
 class Disk:
     def __init__(self):
         self.disk_sequence: List[int] = [int(i) for i in input('Please input disk sequence:').split(' ')]  # 磁盘请求序列

@@ -71,8 +71,7 @@ class ContinueStorageAllocationManagement:
 
         while True:
             self._show_free_storage_information()
-            choice: int = int(input('1:first-fit\n2:best-fit\n3:worst-fit\n4:circle-first-fit\n5:take-back\n0:exit\n:'))
-            if choice == 0:
+            if choice := int(input('1:first-fit\n2:best-fit\n3:worst-fit\n4:circle-first-fit\n5:take-back\n0:exit\n:')) == 0:
                 return
             if not allocation_function.get(choice):
                 print('!!!Input error!!!')

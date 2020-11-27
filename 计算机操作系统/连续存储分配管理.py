@@ -71,10 +71,12 @@ class ContinueStorageAllocationManagement:
 
         while True:
             self._show_free_storage_information()
-            if choice := int(input('1:first-fit\n2:best-fit\n3:worst-fit\n4:circle-first-fit\n5:take-back\n0:exit\n:')) == 0:
-                return
-            if not allocation_function.get(choice):
-                print('!!!Input error!!!')
+            if not allocation_function.get(choice := int(
+                    input('1:first-fit\n2:best-fit\n3:worst-fit\n4:circle-first-fit\n5:take-back\n0:exit\n:'))):
+                if not choice:
+                    return
+                else:
+                    print('!!!Input error!!!')
             allocation_function[choice]()
 
     def _show_free_storage_information(self):
@@ -176,7 +178,6 @@ class ContinueStorageAllocationManagement:
         else:
             print('!!!!Current don\'t have enough storage space to allocate.Please try again!!!!')
 
-
     def _worst_fit_allocation_storage_space(self) -> None:
         sorted_list: List[StorageNode] = sorted(self.storage_list, key=lambda x: x.length, reverse=True)
         work_name, work_size = input('Please input work name and size of space:(split with space)').split(' ')
@@ -200,7 +201,6 @@ class ContinueStorageAllocationManagement:
         else:
             print('!!!!Current don\'t have enough storage space to allocate.Please try again!!!!')
 
-
     def _take_back_work(self):
         work_name: str = input('Please input witch work name you want to take back:')
         work_inf: dict = self.work_dict.get(work_name)
@@ -219,6 +219,7 @@ class ContinueStorageAllocationManagement:
             del self.work_dict[work_name]  # 在作业字典中移除该作业
         else:
             print('!!!!!Work name not exist!Please try again!!!!!')
+
 
 'C:\\Users\\Administrator\\Desktop\\TestFile.txt'
 s = ContinueStorageAllocationManagement(input('Input the file path:'))

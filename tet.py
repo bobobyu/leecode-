@@ -1,12 +1,27 @@
-import matplotlib.pyplot as plt
-a = [13, -3, -25, 20, -3, -16, -23, 18,
-     20, -7, 12, -5, -22, 15, -4, 7]
-sum = 0
-x = []
-for i in a[:8][::-1]:
+from typing import ClassVar
 
-     sum += i
-     x.append(sum)
 
-plt.plot(x, marker='o')
-plt.show()
+def add_attribute(**kwargs):
+    def inner(obj: ClassVar):
+        for i, j in kwargs.items():
+            setattr(obj, i, j)
+        return obj
+
+    return inner
+
+
+@add_attribute(name='Me', values=1)
+class A:
+    static = 1
+
+    def __init__(self):
+        pass
+
+    @property
+    def x(self):
+        print(A.static)
+
+
+a = A()
+print(a.name, a.values)
+a.x

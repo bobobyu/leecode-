@@ -1,5 +1,5 @@
 from typing import List
-
+from progarmmer_declaration import writer_log
 
 def show_information(scan_sequence: List[int], sum_search_length) -> None:
     print(f'\nDisk scan sequence:{scan_sequence}\nAverage search length:{sum_search_length / len(scan_sequence):.4f}\n')
@@ -12,13 +12,12 @@ def bubble_sort(list_: List[int]) -> None:
             if list_[i] > list_[m]:
                 list_[i], list_[m] = list_[m], list_[i]
 
-
+@writer_log(writer='BoYu-Du', by='2020-11-25', summary='disk scheduling policy')
 class Disk:
     def __init__(self):
-        self.disk_sequence: List[int] = [int(i) for i in input('Please input disk sequence:').split(' ')]
-        self.current_magnetic_head: int = -1
+        self.disk_sequence: List[int] = [int(i) for i in input('Please input disk sequence:').split(' ')]  # 磁盘请求序列
         self.sorted_sequence: list = self.disk_sequence.copy()
-        bubble_sort(self.sorted_sequence)
+        bubble_sort(self.sorted_sequence)  # 排序后的磁道序列
 
     def launch_disk_dispatch(self):
         op_dict: dict = {
@@ -32,9 +31,9 @@ class Disk:
               f'3.scan_dispatch\n'
               f'4.circle_scan_dispatch\n'
               f'0:exit\n')
+
         while True:
-            op = int(input('Please choice algorithm:'))
-            if not op_dict.get(op):
+            if not op_dict.get(op := int(input('Please choice algorithm:'))):
                 return
             op_dict[op]()
 

@@ -1,3 +1,4 @@
+import collections
 def cut_cross_array(prices_list: list, low: int, middle: int, high: int):
     left_max = -float('inf')
     _sum: int = 0
@@ -11,6 +12,7 @@ def cut_cross_array(prices_list: list, low: int, middle: int, high: int):
     else:
         left_max = prices_list[low]
         left_mark_ = low
+
     if middle + 1 != high:
         right_max = -float('inf')
         _sum: int = 0

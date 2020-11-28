@@ -70,6 +70,7 @@ class ContinueStorageAllocationManagement:
         }
 
         while True:
+
             self._show_free_storage_information()
             if not allocation_function.get(choice := int(
                     input('1:first-fit\n2:best-fit\n3:worst-fit\n4:circle-first-fit\n5:take-back\n0:exit\n:'))):

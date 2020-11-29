@@ -1,4 +1,10 @@
 from typing import List
+from progarmmer_declaration import writer_log
+
+'''
+4 3 2 1 4 3 5 4 3 2 1 5
+'''
+
 
 class StorageBlock:
     def __init__(self, page_index: int = -1):
@@ -29,6 +35,7 @@ class PhysicsBlockLink:
         self.lacking_page_count: int = 0  # 缺页次数
         self.access_hit_count: int = 0  # 访问命中率
         self.least_recent_dict: dict = {}  # 最近最久访问字典
+        self.use_frequency_dict: dict = {}  # 使用频率字典
 
     def _output_index(self, access_hit: bool) -> list:
         head_block = self.head_block
@@ -40,6 +47,43 @@ class PhysicsBlockLink:
             result.append(head_block.page_index)
             head_block = head_block.next
         return result
+
+    def least_frequency_used(self, *args):
+        access_hit: bool = False
+        self.use_frequency_dict[args[0]] = self.use_frequency_dict.get(args[0], 0) + 1  # 该页面的访问频率+1
+        if args[0] not in self.page_index_view:
+            self.lacking_page_count += 1
+            if len(self.page_index_view) < self.link_size:
+                self.empty_block.page_index = args[0]
+                self.empty_block: StorageBlock = self.empty_block.next
+                self.page_index_view.add(args[0])
+            else:
+                self.replacement_count += 1
+                replacement_page_index: int = min(self.page_index_view,
+                                                  key=lambda x: self.use_frequency_dict[x])  # 找出未被访时间最长的数据索引
+
+                replacement_block: StorageBlock = self.head_block
+                new_block: StorageBlock = StorageBlock(args[0])
+
+                self.use_frequency_dict[args[0]] = 1
+                self.page_index_view.discard(replacement_page_index)
+                self.page_index_view.add(args[0])
+
+                while replacement_block.page_index != replacement_page_index:
+                    replacement_block = replacement_block.next
+
+                replacement_block.next.pre = new_block
+                replacement_block.pre.next = new_block
+                new_block.next = replacement_block.next
+                new_block.pre = replacement_block.pre
+
+                if replacement_block == self.head_block:
+                    self.head_block = new_block
+        else:
+            access_hit = True
+            self.access_hit_count += 1
+
+        return self._output_index(access_hit=access_hit)
 
     def first_input_first_out(self, *args) -> list:
         access_hit: bool = False
@@ -112,7 +156,7 @@ class PhysicsBlockLink:
 
     def least_recently_used(self, *args):
         access_hit: bool = False
-        for index in self.least_recent_dict:
+        for index in self.least_recent_dict:  # 所有内存中的程序存在时间+1
             self.least_recent_dict[index] += 1
         if args[0] not in self.least_recent_dict:
             self.lacking_page_count += 1
@@ -122,7 +166,8 @@ class PhysicsBlockLink:
                 self.empty_block = self.empty_block.next
             else:
                 self.replacement_count += 1
-                replacement_page_index: int = max(self.least_recent_dict, key=lambda x: self.least_recent_dict[x])
+                replacement_page_index: int = max(self.least_recent_dict,
+                                                  key=lambda x: self.least_recent_dict[x])  # 找出未被访时间最长的数据索引
                 replacement_block: StorageBlock = self.head_block
                 new_block: StorageBlock = StorageBlock(args[0])
 
@@ -142,7 +187,7 @@ class PhysicsBlockLink:
         else:
             access_hit = True
             self.access_hit_count += 1
-            self.least_recent_dict[args[0]] = 0
+            self.least_recent_dict[args[0]] = 0  # 刷新上次访问时间
 
         return self._output_index(access_hit=access_hit)
 
@@ -160,6 +205,7 @@ class PhysicsBlockLink:
         self.least_recent_dict.clear()
 
 
+@writer_log(writer='BoYu-Du', summary="page replacing function.")
 class PageReplacementMethod:
     def _load_data(self):
         for index, num in enumerate([int(i) for i in input('Please input page quote string:\n').split(' ')]):
@@ -180,21 +226,22 @@ class PageReplacementMethod:
         return res
 
     def launch_program(self):
-        print('''
-        programmer: BoYu-Du
-        by:2020/11/17
-        summary:This program is used to simulate page replacing function.
-        ''')
+        # print('''
+        # programmer: BoYu-Du
+        # by:2020/11/17
+        # summary:This program is used to simulate page replacing function.
+        # ''')
         self._initial_algorithm()
         self._load_data()
         op_dict: dict = {
             1: self.physics_block_link.first_input_first_out,
             2: self.physics_block_link.optimal_algorithm,
             3: self.physics_block_link.least_recently_used,
+            4: self.physics_block_link.least_frequency_used
         }
         while True:
             print(f'<<<{"-" * 20}>>>')
-            print('1:FIFO\t2:OPT\t3:LRU')
+            print('1:FIFO\t2:OPT\t3:LRU\t4:LFU')
             print(f'<<<{"-" * 20}>>>')
             op = int(input('Input the page replace algorithm:'))
             print()

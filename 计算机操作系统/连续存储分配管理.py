@@ -28,10 +28,10 @@ class StorageNode:
 
 
 class ContinueStorageAllocationManagement:
-    def __init__(self, file_name: str):
+    def __init__(self):
         self.storage_list: List[StorageNode] = []  # 定义一个和数组存储每个节点，在排序时使用
         self.work_dict: dict = {}  # 定义字典结构存储每个作业的状态
-        with open(file_name) as f:  # 读取文件，组装链表
+        with open(input('Input the file path:')) as f:  # 读取文件，组装链表
             for i in f.readlines():
                 current_storage_list: list = [int(i) for i in i.split(' ')]
                 if not self.storage_list:
@@ -223,5 +223,5 @@ class ContinueStorageAllocationManagement:
 
 
 'C:\\Users\\Administrator\\Desktop\\TestFile.txt'
-s = ContinueStorageAllocationManagement(input('Input the file path:'))
+s = ContinueStorageAllocationManagement()
 s.continue_storage_allocation_management()

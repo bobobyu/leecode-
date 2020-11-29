@@ -1,4 +1,2 @@
-a = 2
-b = a
-[b := a * b for _ in range(3)]
-print(b)
+a = [1,2,34,5]
+print(a[-4])

@@ -1,2 +1,4 @@
-a = [1,2,34,5]
-print(a[-4])
+from collections import defaultdict
+a = defaultdict(list)
+a[1].append(2)
+print(a)

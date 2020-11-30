@@ -1,30 +1,17 @@
 from collections import Counter
+from typing import List
 
 
 class Solution:
     def reorganizeString(self, S: str) -> str:
         s_dict: Counter = Counter(S)
-
+        s_sort_key: List[int] = sorted(s_dict, key=lambda x: s_dict[x], reverse=True)
         res: str = ''
-        del_list: list = []
-        while len(s_dict) > 1:
-            for i in s_dict:
-                if s_dict[i]:
-                    res += i
-                    s_dict[i] -= 1
-                    if s_dict[i] == 0:
-                        del_list.append(i)
-            for i in del_list:
-                del s_dict[i]
-        print(res, s_dict)
-        if not s_dict:
-            return res
-        item = s_dict.popitem()
-        if item[-1] > 1:
-            return ''
-        else:
-            return res+item[0]
-
+        split_list: List[int] = []
+        for i in s_
+        print(s_dict, s_sort_key)
+        print(split_list)
 
 s = Solution()
-print(s.reorganizeString("vvvlo"))
+print(s.reorganizeString("vvvaalo"))
+

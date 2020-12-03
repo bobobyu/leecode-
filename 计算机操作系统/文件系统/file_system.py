@@ -15,11 +15,20 @@ class FileCatalog:
     """
 
     def __init__(self):
-        self.file_name: str
-        self.expanded_name: str
-        self.disk_block_index: int
-        self.occupy_disk_block_num: int
-        self.file_size: int
+        self.valid_sign: bool = True
+        self.file_name: str = ''
+        self.expanded_name: str = ''
+        self.disk_block_index: int = -1
+        self.occupy_disk_block_num: int = -1
+        self.file_size: int = -1
+
+    def set_catalog(self, file_name: str, exp_name: str, disk_index: int, occ_num: int, file_size: int):
+        self.valid_sign: bool = False
+        self.file_name: str = file_name
+        self.expanded_name: str = exp_name
+        self.disk_block_index: int = disk_index
+        self.occupy_disk_block_num: int = occ_num
+        self.file_size: int = file_size
 
 
 class DiskBlock:
@@ -49,5 +58,3 @@ class DataBlock:
         self.word: List[str] = [' '] * block_size  # 申请数据块空间
         self.visited_sign: bool = False
         self.next_data_block: DataBlock = None
-
-

@@ -42,7 +42,7 @@ class DiskBlock:
 
     def __init__(self, disk_block_size: int = 3):
         self.map: List[int] = [0] * disk_block_size
-        self.file_number: int
+        self.file_number: int = 0
 
 
 class DataBlock:

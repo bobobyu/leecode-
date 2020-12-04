@@ -14,20 +14,29 @@ class FileSystem:
 
     def __init__(self):
         self.disk_block_size: int = 20  # 划分磁盘块大小
-        self.each_block_size: int = 512  # 每块磁盘的大小(B)
-        self.data_block_size: int = 5  # 每个数据块大小(B)
+        self.each_block_size: int = 1024  # 每块磁盘的大小(B)
+        self.data_block_size: int = 64  # 每个数据块大小(B)
         self.file_catalog_size: int = 20  # 文件目录大小
+        self.UIF: bool = False  # 无条件终端标志
 
     def initial_system(self):
+        if self.disk_block_size <= 2:
+            print('！！！磁盘划分块数量不足！！！')
+            self.UIF = True
+            return
         disk_block: DiskBlock = DiskBlock(disk_block_size=self.disk_block_size)
         disk_block.map[0], disk_block.map[1] = 1, 1  # 初始化存放位示图的盘块
         file_catalog: List[FileCatalog] = [FileCatalog() for _ in range(self.file_catalog_size)]  # 初始化文件目录
 
         with open('file_system', 'wb+') as f:  # 位示图盘块写入系统文件
             pickle.dump(disk_block, f)
+            end_index = self.check_space(end_index=f.tell(), start_index=0)
             pickle.dump(file_catalog, f)
-        with open('file_content', 'w+') as f:  # 申明文件内容空间
-            f.write(' ' * (self.data_block_size * self.disk_block_size - 2))
+            self.check_space(start_index=end_index, end_index=f.tell())
+
+        with open('file_content', 'r+') as f:  # 申请文件内容空间
+            f.seek(2 * self.each_block_size)
+            f.write(' ' * (self.each_block_size * (self.disk_block_size - 2)))
 
         # 释放变量占用的内存
         # del disk_block
@@ -36,19 +45,32 @@ class FileSystem:
 
         print('！！！系统初始化成功！！！')
 
-    def writefile(self) -> None:  # 将目录以及空闲盘块表写入磁盘
+    def check_space(self, start_index: int, end_index: int) -> int:
+        if self.each_block_size <= (end_index - start_index):
+            print('！！磁盘空间不足！！无法存入磁盘位示图！!')
+            self.UIF = True
+        return end_index
+
+
+    def writefile(self, disk_block: DiskBlock, file_catalog: List[FileCatalog]) -> None:  # 将目录以及空闲盘块表写入磁盘
         with open('file_system', 'wb+') as f:
-            pickle.dump(self.disk_block, f)
-            pickle.dump(self.file_catalog, f)
+            pickle.dump(disk_block, f)
+            end_index = self.check_space(end_index=f.tell(), start_index=0)
+            pickle.dump(file_catalog, f)
+            self.check_space(start_index=end_index, end_index=f.tell())
 
     def make_file(self) -> None:
+        if self.UIF:
+            print('！！！系统出错,请查错后重新运行！！！')
+            return
+
         # 反序列化，从磁盘读取位示图和文件目录
         with open('file_system', 'rb+') as f:
             disk_block: DiskBlock = pickle.load(f)
             file_catalog: List[FileCatalog] = pickle.load(f)
 
         # 查询有无空闲的文件目录
-        if not any([i.valid_sign for i in file_catalog]):
+        if  disk_block.file_number == self.file_catalog_size:
             print('文件目录已满！！！请清理后再写入文件！！！')
             return
 
@@ -72,8 +94,8 @@ class FileSystem:
                     if text_point >= size_:  # 文本长度小于数据块容量，退出循环。
                         break
 
-                # 当填满一个数据块后，申请一个新的数据块。
                 pre_block.visited_sign = True
+                # 当填满一个数据块后，申请一个新的数据块。
                 if block_point == self.data_block_size:
                     block_point = 0
                     block_count += 1
@@ -98,15 +120,17 @@ class FileSystem:
                 if block_point == self.data_block_size:
                     block_point = 0
                     block_count += 1
-                    pre_block.visited_sign = True
                     next_block: DataBlock = DataBlock(block_size=self.data_block_size)
                     pre_block.next_data_block = next_block
                     pre_block = next_block
 
         print(f'文本长度为：{text_length}')
+        pre_block = head_block
+        print('文本内容为:', end=' ')
         while pre_block and pre_block.visited_sign:
-            print(''.join(pre_block.word).rstrip(' '), text_length)
+            print(''.join(pre_block.word).rstrip(' '), end='')
             pre_block = pre_block.next_data_block
+        print()
 
         file_name: str = input('请输入文件名称:')
         exp_name: str = input('请输入文件扩展名:')
@@ -132,6 +156,10 @@ class FileSystem:
                         break
                 if valid_sign:
 
+                    print(
+                        f'找到适配的磁盘空间，第一块序号：{empty_block_index},最后一块序号：{empty_block_index + occupancy_size - 1}.\n'
+                        f'开始将文本内容写入磁盘....')
+
                     # 设置文件目录
                     file_catalog[file_catalog_index].set_catalog(file_name=file_name, exp_name=exp_name,
                                                                  file_size=text_length, disk_index=empty_block_index,
@@ -139,21 +167,23 @@ class FileSystem:
 
                     # 修改磁盘位示图
                     disk_block.map[empty_block_index: empty_block_index + occupancy_size] = [1] * occupancy_size
+                    # 文件数加一
+                    disk_block.file_number += 1
+                    # 将修改后的文件目录和位示图写入磁盘
+                    self.writefile(file_catalog=file_catalog, disk_block=disk_block)
 
-                    print(
-                        f'找到适配的磁盘空间，第一块序号：{empty_block_index},最后一块序号：{empty_block_index + occupancy_size - 1},'
-                        f'开始将文本内容写入磁盘....')
-
-                    with open('file_content', 'a+') as f:
-                        f.seek(self.each_block_size * empty_block_index)  # 将指针移动到第一块空闲区域位置
+                    with open('file_content', 'r+') as f:
+                        f.seek(self.each_block_size * empty_block_index, 0)  # 将指针移动到第一块空闲区域位置
                         while head_block and head_block.visited_sign:  # 将数据块中的内容写入
                             f.write(''.join(head_block.word).rstrip(' '))
                             head_block = head_block.next_data_block
                     print('！！！写入成功！！！')
+                    return
 
         print('没有足够的磁盘空间！！！请清理文件后再创建文件！！')
 
 
 s = FileSystem()
 s.initial_system()
+s.make_file()
 s.make_file()

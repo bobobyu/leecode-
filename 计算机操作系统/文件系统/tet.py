@@ -51,7 +51,6 @@ class FileSystem:
             self.UIF = True
         return end_index
 
-
     def writefile(self, disk_block: DiskBlock, file_catalog: List[FileCatalog]) -> None:  # 将目录以及空闲盘块表写入磁盘
         with open('file_system', 'wb+') as f:
             pickle.dump(disk_block, f)
@@ -70,7 +69,7 @@ class FileSystem:
             file_catalog: List[FileCatalog] = pickle.load(f)
 
         # 查询有无空闲的文件目录
-        if  disk_block.file_number == self.file_catalog_size:
+        if disk_block.file_number == self.file_catalog_size:
             print('文件目录已满！！！请清理后再写入文件！！！')
             return
 
@@ -132,12 +131,15 @@ class FileSystem:
             pre_block = pre_block.next_data_block
         print()
 
-        file_name: str = input('请输入文件名称:')
-        exp_name: str = input('请输入文件扩展名:')
+        # 输入文件名，并查重
+        name_list: Set[str] = {i.file_name + i.expanded_name for i in file_catalog}
+        while (file_name := input('请输入文件名称:')) + (exp_name := input('请输入文件扩展名:')) in name_list:
+            print('文件名已存在！！请重新输入！！')
 
-        file_catalog_index, disk_index = 0, 0  # 文件目录序号，磁盘头序号
+        # 文件目录序号，磁盘头序号
+        file_catalog_index, disk_index = 0, 0
 
-        # 查询空闲的文件目录
+        # 查询空闲的文件目录序号
         for file_catalog_i, catalog in enumerate(file_catalog):
             if catalog.valid_sign:
                 file_catalog_index = file_catalog_i
@@ -182,8 +184,51 @@ class FileSystem:
 
         print('没有足够的磁盘空间！！！请清理文件后再创建文件！！')
 
+    def type(self):
+        print(f'>{"-" * 20}启动读取文件功能{"-" * 20}<')
+        # 从磁盘上加载文件目录和位示图到内存
+        with open('file_system', 'rb+') as f:
+            disk_block: DiskBlock = pickle.load(f)
+            if disk_block.file_number == 0:
+                print('当前文件数为0！！！自动退出查询！！！')
+                return
+            file_catalog: List[FileCatalog] = pickle.load(f)
+        name_list: Set[str] = {i.file_name + i.expanded_name for i in file_catalog}
+        while (file_name := input('请输入文件名称:') + input('请输入文件扩展名:')) not in name_list:
+            print('文件名不存在！！请重新输入！！')
+
+        # 文件所处位置
+        file_index: int = -1
+        for i, j in enumerate(file_catalog):
+            if j.file_name + j.expanded_name == file_name:
+                file_index = i
+                break
+        current_file_catalog: FileCatalog = file_catalog[file_index]
+        with open('file_content', 'r+') as f:
+            f.seek(current_file_catalog.disk_block_index * self.each_block_size)  # 文件指针移动到第一块存储区域
+            print(f'当前文件内容为：\n\n{f.read(current_file_catalog.file_size)}')  # 读取文件长度的数据
+        print('\n！！读取完成！！')
+
+    def dir(self):
+        print(f'>{"-" * 20}启动读取文件目录功能{"-" * 20}<')
+        # 从磁盘上加载文件目录和位示图到内存
+        with open('file_system', 'rb+') as f:
+            disk_block: DiskBlock = pickle.load(f)
+            if (file_num := disk_block.file_number) == 0:
+                print('当前文件数为0！！！自动退出查询！！！')
+                return
+            file_catalog: List[FileCatalog] = pickle.load(f)
+
+        print(f'目前共有{file_num}个文件:')
+        for i, file_c in enumerate(file_catalog):
+            if not file_c.valid_sign:
+                print(
+                    f'文件序号：{i}\t文件名：{file_c.file_name}\t文件扩展名：{file_c.expanded_name}\n文件大小：{file_c.file_size}'
+                    f'\t第一块磁盘序号：{file_c.disk_block_index}\t占用磁盘分区数：{file_c.occupy_disk_block_num}\n')
+
 
 s = FileSystem()
 s.initial_system()
 s.make_file()
 s.make_file()
+s.dir()

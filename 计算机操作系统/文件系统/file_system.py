@@ -1,7 +1,5 @@
-from typing import List, Set, Dict, Callable
-import gc
-import _pickle as pickle
-from progarmmer_declaration import writer_log
+from typing import List, Callable
+
 
 
 class FileCatalog:
@@ -63,5 +61,5 @@ class DataBlock:
 
     def __init__(self, block_size: int = 64):
         self.word: List[str] = [' '] * block_size  # 申请数据块空间
-        self.visited_sign: bool = False
-        self.next_data_block: DataBlock = None
+        self.visited_sign: bool = False # 访问标志
+        self.next_data_block: DataBlock = None # 下一个数据块指针

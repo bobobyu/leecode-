@@ -1,4 +1,7 @@
 from file_system import *
+from typing import Set, Dict
+import _pickle as pickle
+from progarmmer_declaration import writer_log
 
 """"
     python通过pickle库将python类写入磁盘时是通过了一些协议对写入的内容进行了处理，
@@ -17,9 +20,9 @@ class FileSystem:
         self.each_block_size: int = 1024  # 每块磁盘的大小(B)
         self.data_block_size: int = 64  # 每个数据块大小(B)
         self.file_catalog_size: int = 20  # 文件目录大小
-        self.UIF: bool = False  # 无条件终端标志
+        self.UIF: bool = False  # 无条件终止标志
         self.IF: bool = False  # 系统初始化标志
-        self.program_dict: Dict[Callable()] = {
+        self.program_dict: Dict[Callable[None]] = {
             0: self.initial_system,
             1: self.make_file,
             2: self.copy,
@@ -28,7 +31,7 @@ class FileSystem:
             5: self.dir
         }
 
-    def launch_file_system(self):
+    def launch_file_system(self) -> None:
         print('正在启动文件系统....\n\n启动成功，请选择以下功能:（！！！！初次使用请先进行初始化！！！！）\n\n')
         print('\t0：初始化系统\t1：创建新文件\t2：复制文件\t3：打开文件\t4：删除文件\t5：打开文件目录\n\n')
         while (op := int(input('请选择:'))) in range(6):
@@ -39,7 +42,7 @@ class FileSystem:
             self.program_dict[op]()
             print('\n')
 
-    def initial_system(self):
+    def initial_system(self) -> None:
         if self.disk_block_size <= 2:
             print('！！！磁盘划分块数量不足！！！')
             self.UIF = True
@@ -198,7 +201,7 @@ class FileSystem:
 
         print('没有足够的磁盘空间！！！请清理文件后再创建文件！！')
 
-    def type(self):
+    def type(self) -> None:
         print(f'>{"-" * 20}启动读取文件功能{"-" * 20}<')
         # 从磁盘上加载文件目录和位示图到内存
         with open('file_system', 'rb+') as f:
@@ -224,7 +227,7 @@ class FileSystem:
             print(f'当前文件内容为：\n\n{f.read(current_file_catalog.file_size)}')  # 读取文件长度的数据
         print('\n！！读取完成！！')
 
-    def dir(self):
+    def dir(self) -> None:
         print(f'>{"-" * 20}启动读取文件目录功能{"-" * 20}<')
         # 从磁盘上加载文件目录和位示图到内存
         with open('file_system', 'rb+') as f:
@@ -241,7 +244,7 @@ class FileSystem:
                     f'文件序号：{i}\t文件名：{file_c.file_name}\t文件扩展名：{file_c.expanded_name}\n文件大小：{file_c.file_size}'
                     f'\t第一块磁盘序号：{file_c.disk_block_index}\t占用磁盘分区数：{file_c.occupy_disk_block_num}\n')
 
-    def delete_file(self):
+    def delete_file(self) -> None:
         print(f'>{"-" * 20}'
               f'启动删除文件功能'
               f'{"-" * 20}<')
@@ -279,7 +282,7 @@ class FileSystem:
             f.write(' ' * text_length)
         print('！！！删除成功！！！')
 
-    def copy(self):
+    def copy(self) -> None:
         print(f'>{"-" * 20}'
               f'启动复制文件功能'
               f'{"-" * 20}<')

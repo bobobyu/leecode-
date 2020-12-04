@@ -18,6 +18,26 @@ class FileSystem:
         self.data_block_size: int = 64  # 每个数据块大小(B)
         self.file_catalog_size: int = 20  # 文件目录大小
         self.UIF: bool = False  # 无条件终端标志
+        self.IF: bool = False  # 系统初始化标志
+        self.program_dict: Dict[Callable()] = {
+            0: self.initial_system,
+            1: self.make_file,
+            2: self.copy,
+            3: self.type,
+            4: self.delete_file,
+            5: self.dir
+        }
+
+    def launch_file_system(self):
+        print('正在启动文件系统....\n\n启动成功，请选择以下功能:（！！！！初次使用请先进行初始化！！！！）\n\n')
+        print('\t0：初始化系统\t1：创建新文件\t2：复制文件\t3：打开文件\t4：删除文件\t5：打开文件目录\n\n')
+        while (op := int(input('请选择:'))) in range(6):
+            print('\t0：初始化系统\t1：创建新文件\t2：复制文件\t3：打开文件\t4：删除文件\t5：打开文件目录\n\n')
+            if op != 0 and not self.IF:
+                print('！！！！请先初始化系统！！！！\n\n')
+                continue
+            self.program_dict[op]()
+            print('\n')
 
     def initial_system(self):
         if self.disk_block_size <= 2:
@@ -42,7 +62,7 @@ class FileSystem:
         # del disk_block
         # del file_catalog
         # gc.collect()
-
+        self.IF = True
         print('！！！系统初始化成功！！！')
 
     def check_space(self, start_index: int, end_index: int) -> int:
@@ -59,9 +79,6 @@ class FileSystem:
             self.check_space(start_index=end_index, end_index=f.tell())
 
     def make_file(self) -> None:
-        if self.UIF:
-            print('！！！系统出错,请查错后重新运行！！！')
-            return
 
         # 反序列化，从磁盘读取位示图和文件目录
         with open('file_system', 'rb+') as f:
@@ -77,7 +94,6 @@ class FileSystem:
         head_block = pre_block = DataBlock(block_size=self.data_block_size)
 
         block_point: int = 0  # 数据块文本指针
-        block_count: int = 0  # 数据块计数器
         text_length: int = 0  # 文本长度计数
         while (text_content := input('请输入文件内容,按 @ 键保存且退出!\n：'))[-1] != '@':
             # print(text_content, text_content[-1])
@@ -97,7 +113,6 @@ class FileSystem:
                 # 当填满一个数据块后，申请一个新的数据块。
                 if block_point == self.data_block_size:
                     block_point = 0
-                    block_count += 1
                     next_block: DataBlock = DataBlock(block_size=self.data_block_size)
                     pre_block.next_data_block = next_block
                     pre_block = next_block
@@ -118,7 +133,6 @@ class FileSystem:
                 pre_block.visited_sign = True
                 if block_point == self.data_block_size:
                     block_point = 0
-                    block_count += 1
                     next_block: DataBlock = DataBlock(block_size=self.data_block_size)
                     pre_block.next_data_block = next_block
                     pre_block = next_block
@@ -149,14 +163,14 @@ class FileSystem:
             com) else 0  # 计算需要至少需要多少磁盘区域
 
         # 申请磁盘空间
-        for empty_block_index, block_ in enumerate(disk_block.map[2:]):
+        for empty_block_index, block_ in enumerate(disk_block.map):
             if not block_:
                 valid_sign: bool = True
                 for check_sign in range(empty_block_index, empty_block_index + occupancy_size):
                     if disk_block.map[check_sign]:
                         valid_sign = False
                         break
-                if valid_sign:
+                if valid_sign:  # 成功申请到空间
 
                     print(
                         f'找到适配的磁盘空间，第一块序号：{empty_block_index},最后一块序号：{empty_block_index + occupancy_size - 1}.\n'
@@ -203,6 +217,7 @@ class FileSystem:
             if j.file_name + j.expanded_name == file_name:
                 file_index = i
                 break
+
         current_file_catalog: FileCatalog = file_catalog[file_index]
         with open('file_content', 'r+') as f:
             f.seek(current_file_catalog.disk_block_index * self.each_block_size)  # 文件指针移动到第一块存储区域
@@ -215,7 +230,7 @@ class FileSystem:
         with open('file_system', 'rb+') as f:
             disk_block: DiskBlock = pickle.load(f)
             if (file_num := disk_block.file_number) == 0:
-                print('当前文件数为0！！！自动退出查询！！！')
+                print('当前文件数为0！！！自动退出打开功能！！！')
                 return
             file_catalog: List[FileCatalog] = pickle.load(f)
 
@@ -226,9 +241,143 @@ class FileSystem:
                     f'文件序号：{i}\t文件名：{file_c.file_name}\t文件扩展名：{file_c.expanded_name}\n文件大小：{file_c.file_size}'
                     f'\t第一块磁盘序号：{file_c.disk_block_index}\t占用磁盘分区数：{file_c.occupy_disk_block_num}\n')
 
+    def delete_file(self):
+        print(f'>{"-" * 20}'
+              f'启动删除文件功能'
+              f'{"-" * 20}<')
+        # 从磁盘上加载文件目录和位示图到内存
+        with open('file_system', 'rb+') as f:
+            disk_block: DiskBlock = pickle.load(f)
+            if disk_block.file_number == 0:
+                print('当前文件数为0！！！自动退出删除功能！！！')
+                return
+            file_catalog: List[FileCatalog] = pickle.load(f)
+
+        # 搜寻需要删除的文件
+        name_list: Set[str] = {i.file_name + i.expanded_name for i in file_catalog}
+        while (file_name := input('请输入需要删除的文件名称:')) + (exp_name := input('请输入需要删除的文件扩展名:')) not in name_list:
+            print('文件名不存在！！请重新输入！！')
+
+        file_index: int = -1
+        for j, i in enumerate(file_catalog):
+            if i.file_name == file_name and i.expanded_name == exp_name:
+                file_index = j
+                break
+
+        current_file_catalog: FileCatalog = file_catalog[file_index]
+        text_length: int = current_file_catalog.file_size  # 获取文件长度
+        disk_first_index: int = current_file_catalog.disk_block_index  # 第一块磁盘序号
+        disk_space: int = current_file_catalog.occupy_disk_block_num  # 获取文件占用的磁盘数
+
+        disk_block.map[disk_first_index:disk_first_index + disk_space] = [0] * disk_space  # 修改位示图
+        disk_block.file_number -= 1  # 文件数减一
+        current_file_catalog.delete_catalog()  # 删除文件目录
+
+        self.writefile(disk_block=disk_block, file_catalog=file_catalog)
+        with open('file_content', 'r+') as f:  # 删除磁盘内容
+            f.seek(self.each_block_size * disk_first_index)
+            f.write(' ' * text_length)
+        print('！！！删除成功！！！')
+
+    def copy(self):
+        print(f'>{"-" * 20}'
+              f'启动复制文件功能'
+              f'{"-" * 20}<')
+        # 从磁盘上加载文件目录和位示图到内存
+        with open('file_system', 'rb+') as f:
+            disk_block: DiskBlock = pickle.load(f)
+            if disk_block.file_number == 0:
+                print('当前文件数为0！！！自动退出复制！！！')
+                return
+            file_catalog: List[FileCatalog] = pickle.load(f)
+
+        # 搜寻需要复制的文件
+        name_list: Set[str] = {i.file_name + i.expanded_name for i in file_catalog}
+        while (file_name := input('请输入需要复制的文件名称:')) + (exp_name := input('请输入需要复制的文件扩展名:')) not in name_list:
+            print('文件名不存在！！请重新输入！！')
+
+        file_index: int = -1
+        for j, i in enumerate(file_catalog):
+            if i.file_name == file_name and i.expanded_name == exp_name:
+                file_index = j
+                break
+
+        current_file_catalog: FileCatalog = file_catalog[file_index]
+        text_length: int = current_file_catalog.file_size  # 获取文件长度
+        ori_disk_first_index: int = current_file_catalog.disk_block_index  # 原文件第一块磁盘序号
+        disk_space: int = current_file_catalog.occupy_disk_block_num  # 获取文件占用的磁盘数
+        # 申请磁盘空间
+        for index, block in enumerate(disk_block.map):
+            if not block:
+                valid_sign: bool = True
+                for i in range(index, index + disk_space):
+                    if disk_block.map[i]:
+                        valid_sign = False
+                        break
+                if valid_sign:  # 成功申请到空间
+
+                    first_block_index = index
+                    print('！！！成功申请到磁盘空间！！！')
+
+                    while (file_name := input('请输入复制文件名称:')) + (exp_name := input('请输入复制文件扩展名:')) in name_list:
+                        print('文件名已存在！！请重新输入！！')
+
+                    # 申请文件目录
+
+                    file_catalog_index: int = -1
+                    for i, j in enumerate(file_catalog):
+                        if j.valid_sign:
+                            file_catalog_index: int = i
+                            break
+
+                    # 设置文件目录
+                    file_catalog[file_catalog_index].set_catalog(file_name=file_name, exp_name=exp_name,
+                                                                 file_size=text_length, disk_index=index,
+                                                                 occ_num=disk_space)
+
+                    # 修改磁盘位示图
+                    disk_block.map[index: index + disk_space] = [1] * disk_space
+                    # 文件数加一
+                    disk_block.file_number += 1
+
+                    # 将修改后的文件目录和位示图写入磁盘
+                    self.writefile(file_catalog=file_catalog, disk_block=disk_block)
+
+                    head = pre_block = DataBlock(block_size=self.data_block_size)  # 申请数据块
+
+                    block_point: int = 0  # 数据块文本指针
+                    start_address: int = ori_disk_first_index * self.each_block_size
+                    with open('file_content', 'r+') as f:  # 将原文件内容写入数据块
+                        f.seek(start_address)  # 文件指针移动到源文件的第一块存储区域
+
+                        text_point: int = 0  # 文本指针
+                        while text_point < text_length:
+                            while block_point < self.data_block_size:
+                                pre_block.word[block_point] = f.read(1)  # 读取一个字节的内容
+
+                                block_point += 1
+                                text_point += 1
+
+                                f.seek(start_address + text_point)  # 指针移动一个字节
+                                if text_point >= text_length:
+                                    break
+                            pre_block.visited_sign = True
+                            if block_point == self.data_block_size:
+                                block_point = 0
+                                next_block: DataBlock = DataBlock(block_size=self.data_block_size)
+                                pre_block.next_data_block = next_block
+                                pre_block = next_block
+
+                        # 将数据块中的内容写入磁盘
+                        f.seek(first_block_index * self.each_block_size, 0)  # 文件指针移动到申请到空间的第一区域
+                        while head and head.visited_sign:
+                            f.write(''.join(head.word).rstrip(' '))
+                            head = head.next_data_block
+                        print('！！！复制成功！！!')
+                        return
+
+        print('没有足够的磁盘空间！！！请清理文件后再创建文件！！')
+
 
 s = FileSystem()
-s.initial_system()
-s.make_file()
-s.make_file()
-s.dir()
+s.launch_file_system()

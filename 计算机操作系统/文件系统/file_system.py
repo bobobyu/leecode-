@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List, Set, Dict, Callable
 import gc
 import _pickle as pickle
 from progarmmer_declaration import writer_log
@@ -30,6 +30,13 @@ class FileCatalog:
         self.occupy_disk_block_num: int = occ_num
         self.file_size: int = file_size
 
+    def delete_catalog(self):
+        self.valid_sign: bool = True
+        self.file_name: str = ''
+        self.expanded_name: str = ''
+        self.disk_block_index: int = -1
+        self.occupy_disk_block_num: int = -1
+        self.file_size: int = -1
 
 class DiskBlock:
     """

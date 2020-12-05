@@ -16,6 +16,7 @@ class Solution:
         residue_string = ''
         for i, j in enumerate(s_sort_key[1:]):
             residue_string += j*s_sort_values[i+1]
+        print(residue_string)
         residue_string = list(residue_string)
         while residue_string:
             for i in range(len(split_list)):
@@ -29,4 +30,4 @@ class Solution:
                     else:
                         return res
 s = Solution()
-print(s.reorganizeString("bbbb"))
+print(s.reorganizeString("bbb12312asdb"))

@@ -221,6 +221,7 @@ class FileSystem:
                 file_index = i
                 break
 
+        # 序号对应的文件目录首地址
         current_file_catalog: FileCatalog = file_catalog[file_index]
         with open('file_content', 'r+') as f:
             f.seek(current_file_catalog.disk_block_index * self.each_block_size)  # 文件指针移动到第一块存储区域
@@ -293,6 +294,9 @@ class FileSystem:
                 print('当前文件数为0！！！自动退出复制！！！')
                 return
             file_catalog: List[FileCatalog] = pickle.load(f)
+            if disk_block.file_number == self.file_catalog_size:
+                print('当前文件目录已满！！！自动退出复制！！！')
+                return
 
         # 搜寻需要复制的文件
         name_list: Set[str] = {i.file_name + i.expanded_name for i in file_catalog}

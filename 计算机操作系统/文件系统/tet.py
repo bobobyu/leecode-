@@ -4,6 +4,7 @@ import _pickle as pickle
 from progarmmer_declaration import writer_log
 
 """"
+
     python通过pickle库将python类写入磁盘时是通过了一些协议对写入的内容进行了处理，
 所以难以通过移动指针的准确定位文件目录，存放盘位示图，文件内容在磁盘中的位置。
     所以本次实验将建立两个模拟盘，第一个模拟盘存放文件目录和盘块位示图，而第二
@@ -65,6 +66,7 @@ class FileSystem:
         # del disk_block
         # del file_catalog
         # gc.collect()
+
         self.IF = True
         print('！！！系统初始化成功！！！')
 

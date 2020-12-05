@@ -1,6 +1,7 @@
 from typing import List
 from progarmmer_declaration import writer_log
 
+
 def show_information(scan_sequence: List[int], sum_search_length) -> None:
     print(f'\nDisk scan sequence:{scan_sequence}\nAverage search length:{sum_search_length / len(scan_sequence):.4f}\n')
 
@@ -11,6 +12,7 @@ def bubble_sort(list_: List[int]) -> None:
         for m in range(i + 1, length):
             if list_[i] > list_[m]:
                 list_[i], list_[m] = list_[m], list_[i]
+
 
 @writer_log(writer='BoYu-Du', summary='disk scheduling policy')
 class Disk:
@@ -49,11 +51,23 @@ class Disk:
 
         next_magnetic_head: int = int(input('Please input current disk index:'))
         sum_search_length: int = 0
+        self.sorted_sequence.append(next_magnetic_head)
+        self.sorted_sequence.sort()
+        sol = []
+        first_index: int = self.sorted_sequence.index(next_magnetic_head)
 
-        for current_magnetic_head in self.sorted_sequence:
-            sum_search_length += abs(next_magnetic_head - current_magnetic_head)
-            next_magnetic_head = current_magnetic_head
-        show_information(scan_sequence=self.sorted_sequence, sum_search_length=sum_search_length)
+        while len(self.sorted_sequence) > 1:
+
+            next_direction: int = -1 if abs(self.sorted_sequence[first_index] - self.sorted_sequence[
+                min(len(self.sorted_sequence) - 1, first_index + 1)]) > abs(
+                self.sorted_sequence[first_index] - self.sorted_sequence[max(0, first_index - 1)]) else 1
+
+            sum_search_length += abs(
+                self.sorted_sequence[first_index] - self.sorted_sequence[first_index + next_direction])
+            sol.append(self.sorted_sequence.pop(first_index))
+            first_index += next_direction
+        sol.append(self.sorted_sequence.pop())
+        show_information(scan_sequence=sol, sum_search_length=sum_search_length)
 
     def scan(self):
         sort_copy: List[int] = self.sorted_sequence.copy()
@@ -103,3 +117,6 @@ class Disk:
 
 s = Disk()
 s.launch_disk_dispatch()
+'''
+20 44 40 4 80 12 76
+'''

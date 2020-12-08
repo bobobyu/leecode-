@@ -1,21 +1,25 @@
 from typing import *
-
+import itertools
 
 class Solution:
     def readBinaryWatch(self, num: int) -> List[str]:
-        clock_list: List[int] = [i for i in range(10)]
+        # clock_list: List[int] = [i for i in range(10)]
         sol: List[List[int]] = []
 
-        def rec(sol_: List, n: int = num, alternative_list: List[int] = clock_list):
-            if n == 0:
-                sol.append(sol_)
+        # def rec(sol_: List, n: int = num, alternative_list: List[int] = clock_list):
+        #     if n == 0:
+        #         sol.append(sol_)
+        #
+        #     else:
+        #         for i, j in enumerate(alternative_list):
+        #             if not sol_ or j > sol_[-1]:
+        #                 rec(n=n - 1, alternative_list=alternative_list[:i] + alternative_list[i + 1:], sol_=sol_ + [j])
 
-            else:
-                for i, j in enumerate(alternative_list):
-                    if not sol_ or j > sol_[-1]:
-                        rec(n=n - 1, alternative_list=alternative_list[:i] + alternative_list[i + 1:], sol_=sol_ + [j])
 
-        rec(sol_=[])
+        for i in itertools.combinations(range(10), r=num):
+            sol.append(i)
+        # rec(sol_=[])
+        print(sol)
         res: List[str] = []
         for i in sol:
             hours: List[str] = ['0', 'b'] + ['0'] * 4
@@ -30,4 +34,4 @@ class Solution:
         return res
 
 s = Solution()
-print(s.readBinaryWatch(1))
+print(s.readBinaryWatch(2))

@@ -1,7 +1,6 @@
 from typing import List, Callable
 
 
-
 class FileCatalog:
     """
     文件目录结构
@@ -11,6 +10,7 @@ class FileCatalog:
     文件占用磁盘块的第一块:    disk_block_index
     文件大小：   file_size
     """
+    __slots__ = ('valid_sign', 'file_name', 'expanded_name', 'disk_block_index', 'occupy_disk_block_num', 'file_size')
 
     def __init__(self):
         self.valid_sign: bool = True
@@ -35,6 +35,7 @@ class FileCatalog:
         self.disk_block_index: int = -1
         self.occupy_disk_block_num: int = -1
         self.file_size: int = -1
+
 
 class DiskBlock:
     """
@@ -61,5 +62,5 @@ class DataBlock:
 
     def __init__(self, block_size: int = 64):
         self.word: List[str] = [' '] * block_size  # 申请数据块空间
-        self.visited_sign: bool = False # 访问标志
-        self.next_data_block: DataBlock = None # 下一个数据块指针
+        self.visited_sign: bool = False  # 访问标志
+        self.next_data_block: DataBlock = None  # 下一个数据块指针

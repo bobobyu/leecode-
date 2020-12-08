@@ -1,5 +1,29 @@
-with open('e.txt','w+') as f:
-    f.write(' '*100)
+def fa(obj):
+    d: a = obj()
+    print(d.x)
 
-with open('e.txt','a+') as f:
-    f.writelines('123')
+    def inner(**kwargs):
+        for key, val in kwargs.items():
+            x = d.a
+            print(x)
+            setattr(d, key, val)
+        return d
+
+    return inner(f=4)
+
+
+@fa
+class a:
+    a = 1
+
+    def __init__(self):
+        self.x = 1
+
+    def return_list(self):
+        return
+
+
+
+x = a
+print(x.f)
+

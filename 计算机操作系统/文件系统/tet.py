@@ -1,5 +1,5 @@
 from file_system import *
-from typing import Set, Dict
+from typing import *
 import _pickle as pickle
 from progarmmer_declaration import writer_log
 

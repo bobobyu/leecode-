@@ -1,4 +1,4 @@
-from typing import List, Callable
+from typing import *
 
 
 class FileCatalog:
@@ -10,7 +10,7 @@ class FileCatalog:
     文件占用磁盘块的第一块:    disk_block_index
     文件大小：   file_size
     """
-    __slots__ = ('valid_sign', 'file_name', 'expanded_name', 'disk_block_index', 'occupy_disk_block_num', 'file_size')
+    __slots__ = 'valid_sign', 'file_name', 'expanded_name', 'disk_block_index', 'occupy_disk_block_num', 'file_size'
 
     def __init__(self):
         self.valid_sign: bool = True
@@ -45,10 +45,14 @@ class DiskBlock:
     文件数量：   file_number
 
     """
+    __slots__ = 'map', 'file_number'
 
     def __init__(self, disk_block_size: int = 3):
         self.map: List[int] = [0] * disk_block_size
         self.file_number: int = 0
+
+    def __getitem__(self, index: int):
+        return self.map[index]
 
 
 class DataBlock:
@@ -59,6 +63,7 @@ class DataBlock:
     指向下一个数据块：   next_data_block
 
     """
+    __slots__ = 'word', 'visited_sign', 'next_data_block'
 
     def __init__(self, block_size: int = 64):
         self.word: List[str] = [' '] * block_size  # 申请数据块空间
